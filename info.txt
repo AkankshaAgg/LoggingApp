@@ -1,0 +1,82 @@
+//We need to basically change where we are logging into.
+//We can log into console and debug logging.
+
+Basics: we want to change where we are logging to instead of microsoft doing it.
+Modify the createhostbuilder in which we get logged by default using createdefaultbuilder
+
+we are going to add another section here. Example:
+original: 
+Host.CreateDefaultBuilder(args)
+                .ConfigureWebHostDefaults(webBuilder =>
+                {
+                    webBuilder.UseStartup<Startup>();
+                });
+
+modifications: Host.CreateDefaultBuilder(args)
+		.ConfigureLogging((context, logging) =>
+		{
+			//to clear what microsoft did
+			//to clear whichever is going to get the logging
+			logging.ClearProviders(); 
+			//add configuration => how to configure our loggers, what's listening, who's listening
+			//load logging from appsettings.json file
+			logging.AddConfiguration(context.Configuration.GetSection("Logging"));
+			//Add where we are going to logging
+			logging.AddDebug();
+			logging.AddConsole(); 
+			//Eventsource, EventLog, TraceSource, AzureAppServicesFile, AzureAppServicesBlob, ApplicationInsights - in these we can also store
+		}
+                .ConfigureWebHostDefaults(webBuilder =>
+                {
+                    webBuilder.UseStartup<Startup>();
+                });
+
+//logging can be synchronous and asynchronous
+//logging should be fast
+//logging doesn't guarantee everything will be logged.
+//logging primary purpose is to monitor or debug your application
+
+
+in index.cshtml.cs file:
+IndexModel tells about the data getting logged.
+public void OnGet()
+        {
+            _logger.LogInformation("This is the first logged message.");
+        }
+
+we can also associate ids for events.
+example: 
+public class LoggingId
+{
+	public const int DemoCode = 1001;
+}
+
+and pass this id as
+public void OnGet()
+        {
+            _logger.LogInformation(LoggingId.DemoCode,"This is the first logged message.");
+        }
+
+
+//in general we use information and warning log more often.
+
+
+{
+  "Logging": {
+    //This is how logging is configured. 
+	//right now, having only one level.
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft": "Warning",
+      "Microsoft.Hosting.Lifetime": "Information"
+    }
+  },
+  "AllowedHosts": "*"
+}
+
+right now, we don't want to have any info from microsoft.
+so doing some modifications.
+=> able to generate our built logs.
+
+//for formal logging, or for longer time
+//you can pass serilog 
